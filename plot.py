@@ -80,12 +80,11 @@ class Plot():
         ax[2].plot(x, y, 'silver', linewidth=1.5)
 
         popt = self.fit_nonconvergent_sigmoid(x, y)
-        a, b, c = popt
         print(popt)
 
         self.save_steels_to_archive(x, y, self.mean_number_of_different_words, self.mean_number_of_total_words)
 
-        ax[2].plot(x, self.nonconvergent_sigmoid(x, a, b, c), color='navy', linewidth=1)
+        ax[2].plot(x, self.nonconvergent_sigmoid(x, *popt), color='navy', linewidth=1)
         ax[2].legend(('averaged success', 'success'))
 
         ax[2].set_xlabel('$t$')
