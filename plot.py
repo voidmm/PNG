@@ -47,7 +47,7 @@ class Plot():
 
 
     def save_png_figure(self, **kwargs):
-        file_string = 'Agents {}, repeats {}, rounds {}, reward {}, connects {}'
+        file_string = 'Agents {}, repeats {}, rounds {}, reward {}'
 
         for k, v in kwargs.items():
             file_string += ', ' + ' {' + k + '}'
