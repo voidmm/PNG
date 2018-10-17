@@ -10,10 +10,10 @@ CPU_COUNT = cpu_count()
 
 params = eval(open('parameters.txt').read())
 
+reward = params['reward']
 number_of_repeats = params['number_of_repeats']
 number_of_agents = params['number_of_agents']
 number_of_rounds = params['number_of_rounds']
-reward = params['reward']
 
 
 if number_of_repeats % CPU_COUNT != 0:
