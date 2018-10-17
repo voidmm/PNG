@@ -11,18 +11,16 @@ import pandas as pd
 
 class Plot():
 
-    def __init__(self, history, save_figure, path, number_of_agents, number_of_repeats,
-                 number_of_rounds, reward, mean_number_of_different_words, mean_number_of_total_words):
-        self.history = history
-        self.save_figure = save_figure
-        self.path = path
-        self.number_of_agents = number_of_agents
-        self.number_of_repeats = number_of_repeats
-        self.number_of_rounds = number_of_rounds
-        self.reward = reward
+    def __init__(self):
+        params = eval(open('parameters.txt').read())
+        self.save_figure = eval(params['save_figure'])
+        self.save_npz = eval(params['save_npz'])
+        self.path = params['plot_path']
+        self.number_of_agents = params['number_of_agents']
+        self.number_of_repeats = params['number_of_repeats']
+        self.number_of_rounds = params['number_of_rounds']
+        self.reward = params['reward']
         self.extrapolation_factor = int(np.ceil(self.number_of_rounds / 10000))
-        self.mean_number_of_different_words = mean_number_of_different_words
-        self.mean_number_of_total_words = mean_number_of_total_words
 
 
     def sigmoid(self, x, a, b, c):
@@ -48,26 +46,25 @@ class Plot():
         return popt
 
 
-    def save_figure(self, **kwargs):
-        file_string = 'Agents {}, repeats {}, rounds {}, reward {}, graph {}, connects {}'
+    def save_png_figure(self, **kwargs):
+        file_string = 'Agents {}, repeats {}, rounds {}, reward {}, connects {}'
 
         for k, v in kwargs.items():
-            file_string += ', ' + k + ' {' + k + '}'
+            file_string += ', ' + ' {' + k + '}'
         if self.save_figure:
             plt.savefig(self.path + file_string.format(self.number_of_agents, self.number_of_repeats,
-                                                        self.number_of_rounds, self.reward,
-                                                        self.language_construct_filename, **kwargs) + '.png',
+                                                        self.number_of_rounds, self.reward, **kwargs) + '.png',
                                                         dpi=180)
 
-    def plot_success_and_word_numbers(self):
+    def plot_success_and_word_numbers(self, history, mean_number_of_different_words, mean_number_of_total_words):
         original_number_of_rounds = self.number_of_rounds
-        mean_history = np.sum(self.history, axis=0)
+        mean_history = np.sum(history, axis=0)
         
         if self.extrapolation_factor >= 2:
             mean_history = mean_history[0::self.extrapolation_factor]
-            self.mean_number_of_different_words = self.mean_number_of_different_words[0::self.extrapolation_factor]
-            self.mean_number_of_total_words = self.mean_number_of_total_words[0::self.extrapolation_factor]
-            self.number_of_rounds = len(self.mean_number_of_total_words)
+            mean_number_of_different_words = mean_number_of_different_words[0::self.extrapolation_factor]
+            mean_number_of_total_words = mean_number_of_total_words[0::self.extrapolation_factor]
+            self.number_of_rounds = len(mean_number_of_total_words)
         
         _, ax = plt.subplots(3, 1, figsize=(8, 4))
         ml = AutoMinorLocator()
@@ -82,7 +79,7 @@ class Plot():
         popt = self.fit_nonconvergent_sigmoid(x, y)
         print(popt)
 
-        self.save_steels_to_archive(x, y, self.mean_number_of_different_words, self.mean_number_of_total_words)
+        self.save_steels_to_archive(x, y, mean_number_of_different_words, mean_number_of_total_words)
 
         ax[2].plot(x, self.nonconvergent_sigmoid(x, *popt), color='navy', linewidth=1)
         ax[2].legend(('averaged success', 'success'))
@@ -92,21 +89,24 @@ class Plot():
         ax[2].xaxis.set_minor_locator(ml)
         ax[2].set_yticks(np.arange(0, 1.25, 0.25))
 
-        ax[1].plot(x, self.mean_number_of_different_words, 'navy')
+        ax[1].plot(x, mean_number_of_different_words, 'navy')
         ax[1].set_ylabel('$N_{d}(t)$', rotation=90)
         ax[1].xaxis.set_minor_locator(ml)
-        ax[1].set_yticks(np.linspace(0, self.mean_number_of_different_words[-1], 5, dtype=int))
+        ax[1].set_yticks(np.linspace(0,mean_number_of_different_words[-1], 5, dtype=int))
 
-        ax[0].plot(x, self.mean_number_of_total_words, 'navy')
+        ax[0].plot(x, mean_number_of_total_words, 'navy')
         ax[0].set_ylabel('$N_{w}(t)$', rotation=90)
-        ax[0].set_yticks(np.linspace(0, self.mean_number_of_total_words[-1], 5, dtype=int))
+        ax[0].set_yticks(np.linspace(0, mean_number_of_total_words[-1], 5, dtype=int))
         ax[0].xaxis.set_minor_locator(ml)
 
 
         plt.subplots_adjust(left=0.125, right=0.9, bottom=0.1, top=0.9, wspace=0.2, hspace=0.3)
+        kwargs = {'type': 'sigmoid'}
+        self.save_png_figure(**kwargs)
         plt.show()
 
     
     def save_steels_to_archive(self, x, y, diffWordNums, totalWordNums):
-        filename = 'sigmoid data/'+ 'PNG  ' + str(self.number_of_agents)+', '+str(self.number_of_repeats)+', '+str(self.number_of_rounds)+', '+str(self.reward)
-        np.savez(filename+'.npz',name1=x,name2=y, name3=diffWordNums,name4=totalWordNums)
+        if self.save_npz:
+            filename = 'sigmoid data/'+ 'PNG  ' + str(self.number_of_agents)+', '+str(self.number_of_repeats)+', '+str(self.number_of_rounds)+', '+str(self.reward)
+            np.savez(filename+'.npz',name1=x,name2=y, name3=diffWordNums,name4=totalWordNums)

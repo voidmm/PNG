@@ -5,33 +5,16 @@ from probabilisticnaminggame import language_game
 from multiprocessing import Pool, cpu_count
 
 
-"""
-
-Define parameters of the Probabilistic Naming Game
-
-insert the path where the plots of the success history should be saved
-decide whether you want to save the figure
-the number of agents that partake in each game
-the number of rounds defined the number of rounds of one probabilistic naming game
-the reward that is applied to the probability of a word that was used by both agents to
-name the object
-the number of repeats defines the number of total, individual games that are played
-
-"""
 
 CPU_COUNT = cpu_count()
 
-plot_path = ''
+params = eval(open('parameters.txt').read())
 
-save_figure = False
+number_of_repeats = params['number_of_repeats']
+number_of_agents = params['number_of_agents']
+number_of_rounds = params['number_of_rounds']
+reward = params['reward']
 
-number_of_agents = 100
-
-number_of_rounds = 20000
-
-reward = 10
-
-number_of_repeats = 1000
 
 if number_of_repeats % CPU_COUNT != 0:
 	number_of_repeats -= number_of_repeats % CPU_COUNT
@@ -71,9 +54,8 @@ if __name__ == "__main__":
     end = time.time()
     print('Total time in seconds: '+ str( end - start))
 
-    Plot = Plot(history, save_figure, plot_path, number_of_agents, number_of_repeats,
-				 number_of_rounds, reward, mean_number_of_different_words, mean_number_of_total_words)
-    Plot.plot_success_and_word_numbers()
+    Plot = Plot()
+    Plot.plot_success_and_word_numbers(history, mean_number_of_different_words, mean_number_of_total_words)
 
 
 
